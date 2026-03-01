@@ -82,7 +82,7 @@ int main(){
 	uint16_t*	motor_speed;
 	char		usart1_received_data_buffer[50];
 	uint8_t*	new_duty_cycle;
-        char            gps_received_data_buffer[50];
+	char	    gps_received_data_buffer[50];
 //	static uint32_t last_pid_time;
 	
 //	last_pid_time	= 0;
@@ -107,7 +107,7 @@ int main(){
 	
 	// 串口接收缓冲区初始化
 	memset(usart1_received_data_buffer, 0, sizeof(usart1_received_data_buffer));
-        memset(gps_received_data_buffer, 0, sizeof(gps_received_data_buffer));
+	memset(gps_received_data_buffer, 0, sizeof(gps_received_data_buffer));
 	// 设置PID参数
 	PID_factor_setting(0.01, 0.009, 0.1);
 
@@ -130,11 +130,13 @@ int main(){
 			if((gps_handler.raw_buffer[GPS_STATUS_OFFSET])=='A'){
 				//发送数据(debug)
 				Send_GPS_String(USART3, gps_handler.coordinate, GPS_COORDINATE_SIZE);
-                                // 构造经纬度数据字符串
-                                sprintf(gps_received_data_buffer, "#n/2/%.6f/%.6f*\n", latitude_f, longtitude_f);
-                                // todo 检验这里的字符串
-                                send_string_in_specific_way(USART_WAY, USART1, gps_received_data_buffer);
-                        }
+				// 构造经纬度数据字符串
+				sprintf(gps_received_data_buffer, "#n/2/%.6f/%.6f*\n", latitude_f, longtitude_f);
+				// todo 检验这里的字符串
+				send_string_in_specific_way(USART_WAY, USART1, gps_received_data_buffer);
+				// debug 
+				printf("gps_received_data_buffer: %s", gps_received_data_buffer);
+			}
 			//转换状态
 			gps_handler.state	= GPS_IDLE;
 		}
