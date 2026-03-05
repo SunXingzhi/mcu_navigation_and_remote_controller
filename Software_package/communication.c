@@ -23,6 +23,7 @@ volatile uint8_t		receive_finished_status	= 0;
 uint8_t				Serial_RxFlag;				//定义接收数据包标志位
 extern MOTOR_INFORMATION	motor_information;
 extern PID_TypeDef*		pid_struct;
+extern NavigationInfo           navigation_info;
 
 // 定义枚举变量
 COMMUNICATION_WAY communication_way;
@@ -52,7 +53,7 @@ void send_string_in_specific_way(COMMUNICATION_WAY way,  \
 			// 转换设备地址
 			USART_send_string((USART_TypeDef*)device_address, data_string);
 			break;
-                // TODO: 其他发送方式
+		// TODO: 其他发送方式
 		case SOCKET_WAY:
 			break;
 		case I2C_WAY:
@@ -81,9 +82,9 @@ void parse_usart1_command(char* received_data_buffer)
 	bool	is_turned[2];			// 查看两侧电机方向是否改变的状态值
 //	int8_t	last_motor_direction[2];	// 两侧电机
 	int32_t	motor_duty_cycle;
-        int8_t  temp_direction[2];
+	int8_t  temp_direction[2];
 
-        // 安全检查
+	// 安全检查
 	if(command_length==0 || usart1_received_data[command_length]!='\0'){
 		printf(" ERR:MISSING_NULL\n");
 		// 清空缓冲区数据
@@ -102,12 +103,14 @@ void parse_usart1_command(char* received_data_buffer)
 	memcpy(received_data_buffer, usart1_received_data, command_length);
 	
 	switch(command_type){
-		// 导航命令 n/v_lf/v_rf/move_time
+        // 导航命令 n/v_lf/v_rf/move_time
+        // 转弯命令:n/R/10/10/10/10*
 		case 'n':{
-                        Navigation_ParseCommand(received_data_buffer);
-                }
-                // 电机控制 m/lf/rf/lb/rb
-                case 'm':{ 
+			Navigation_ParseCommand(received_data_buffer);
+                        
+		}
+		// 电机控制 m/lf/rf/lb/rb
+		case 'm':{ 
 //			// 当接收到新的电机控制命令时，重置电机状态为默认状态
 			if(motor_information.motor_status==BRAKE_STATUS) {
 				// 如果当前是制动状态，先释放制动

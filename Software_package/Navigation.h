@@ -9,47 +9,49 @@
 
 // 导航相关定义
 #define TOLERANCE_DISTANCE      1.0f    // 目标点距离容差 单位m
-#define TOLERANCE_ANGLE         10.0f   // 目标点角度容差 单位度
+#define TOLERANCE_ANGLE		10.0f   // 目标点角度容差 单位度
 
 // 导航命令类型
-#define NAVIGATION_START        'A'
-#define NAVIGATION_END          'Z'
-#define NAVIGATION_POSITION     'G'
-#define NAVIGATION_MOVE         'T'
-#define NAVIGATION_TURN         'R'
-
+#define NAVIGATION_START		'A'
+#define NAVIGATION_END			'Z'
+#define NAVIGATION_POSITION     	'G'
+#define NAVIGATION_MOVE			'T'
+#define NAVIGATION_TURN			'R'
+#define NAVIGATION_TURN_FINISH		'F'	
 // 导航应答类型
-#define NAVIGATION_ACK_START    0
-#define NAVIGATION_ACK_END      1
-#define NAVIGATION_ACK_POSITION 2
-#define NAVIGATION_ACK_MOVE     3
-#define NAVIGATION_ACK_TURN     4
-
+#define NAVIGATION_ACK_START    	0
+#define NAVIGATION_ACK_END      	1
+#define NAVIGATION_ACK_POSITION 	2
+#define NAVIGATION_ACK_MOVE     	3
+#define NAVIGATION_ACK_TURN     	4
+#define NAVIGATION_ACK_TURN_FINISH	5
+#
 // 外部变量声明
 
 
 // 导航状态枚举
 typedef enum {
-        NAVIGATION_OFF = 0,
-        NAVIGATION_STARTING,
-        NAVIGATION_WAITING_FOR_POSITION,
-        NAVIGATION_WAITING_FOR_MOVE,
-        NAVIGATION_EXECUTING_MOVE,
-        NAVIGATION_EXECUTING_TURN,
-        NAVIGATION_FINISHING
+	NAVIGATION_OFF = 0,
+	NAVIGATION_STARTING,
+	NAVIGATION_WAITING_FOR_POSITION,
+	NAVIGATION_WAITING_FOR_MOVE,
+	NAVIGATION_EXECUTING_MOVE,
+	NAVIGATION_EXECUTING_TURN,
+	NAVIGATION_EXECUTING_WAITING,
+	NAVIGATION_FINISHING
 } NavigationState;
 
 
 // 导航相关结构体
 typedef struct {
-    float target_latitude;
-    float target_longitude;
-    float current_latitude;
-    float current_longitude;
-    int8_t left_motor_duty_cycle;
-    int8_t right_motor_duty_cycle;
-    uint16_t move_duration;  // 运动时间，单位秒
-    NavigationState state;
+	float target_latitude;
+	float target_longitude;
+	float current_latitude;
+	float current_longitude;
+	int8_t left_motor_duty_cycle;
+	int8_t right_motor_duty_cycle;
+	uint16_t move_duration;  // 运动时间，单位秒
+	NavigationState state;
 } NavigationInfo;
 
 // 函数声明

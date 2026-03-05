@@ -53,24 +53,24 @@ void Navigation_SendInfo(uint8_t ack_type, float latitude, float longitude)
 		
 		// 导航结束响应
 		case NAVIGATION_ACK_END:
-                        snprintf(ack_buffer, sizeof(ack_buffer), "#n/1*\n");
-                        break;
+			snprintf(ack_buffer, sizeof(ack_buffer), "#n/1*\n");
+			break;
 		
 		// 导航位置响应
 		case NAVIGATION_ACK_POSITION:
-                        printf("已被废除的命令\n");
-                        snprintf(ack_buffer, sizeof(ack_buffer), "#n/2/%.4f/%.4f*\n", latitude, longitude);
-                        break;
+			printf("已被废除的命令\n");
+			snprintf(ack_buffer, sizeof(ack_buffer), "#n/2/%.4f/%.4f*\n", latitude, longitude);
+			break;
 		
 		// 导航转向完成响应
 		case NAVIGATION_ACK_TURN:
-                        snprintf(ack_buffer, sizeof(ack_buffer), "#n/4*\n");
-                        break;
+			snprintf(ack_buffer, sizeof(ack_buffer), "#n/4*\n");
+			break;
 		
 		// 导航运动完成响应
 		case NAVIGATION_ACK_MOVE:
-                        snprintf(ack_buffer, sizeof(ack_buffer), "#n/3*\n");
-                        break;
+			snprintf(ack_buffer, sizeof(ack_buffer), "#n/3*\n");
+			break;
 		default:
 			return;
 	}
@@ -85,13 +85,13 @@ void Navigation_ReceiveMoveInfo(char* received_data_buffer)
 	char* token;
 	char buffer[50];
 	
-        int32_t motor_duty_cycle;
+	int32_t motor_duty_cycle;
 	// // 复制数据到临时缓冲区
 	// strncpy(buffer, received_data_buffer, sizeof(buffer));
 	// buffer[sizeof(buffer)-1] = '\0';
 
-        motor_duty_cycle = 0;
-        // 解析运动命令格式：@n/T/左速度/右速度/时间*
+	motor_duty_cycle = 0;
+	// 解析运动命令格式：@n/T/左速度/右速度/时间*
 	token = strtok(buffer, "/");
 	if(token == NULL) return;
 	
@@ -102,13 +102,13 @@ void Navigation_ReceiveMoveInfo(char* received_data_buffer)
 	// 获取左右电机速度, 占空比
 	token = strtok(NULL, "/");
 	if(token != NULL) {
-                motor_duty_cycle     = atoi(token);
-                navigation_info.left_motor_duty_cycle = motor_duty_cycle;
-        }
+		motor_duty_cycle     = atoi(token);
+		navigation_info.left_motor_duty_cycle = motor_duty_cycle;
+	}
 	
 	token = strtok(NULL, "/");
 	if(token != NULL) {
-                motor_duty_cycle     = atoi(token);
+		motor_duty_cycle     = atoi(token);
 		navigation_info.right_motor_duty_cycle = motor_duty_cycle;
 	}
 	
@@ -133,7 +133,7 @@ void Navigation_ReceiveTurnInfo(char* received_data_buffer)
 	// strncpy(buffer, received_data_buffer, sizeof(buffer));
 	// buffer[sizeof(buffer)-1] = '\0';
 	
-        motor_duty_cycle = 0;
+	motor_duty_cycle = 0;
 	// 解析转向命令格式：@n/R/v_lf/v_rf/v_lb/v_rb*
 	token = strtok(buffer, "/");
 	if(token == NULL) return;
@@ -142,18 +142,18 @@ void Navigation_ReceiveTurnInfo(char* received_data_buffer)
 	token = strtok(NULL, "/");
 	if(token == NULL || token[0] != NAVIGATION_TURN) return;
 	
-        // 获取左右两侧电机速度, 占空比
+	// 获取左右两侧电机速度, 占空比
 	token = strtok(NULL, "/");
 	if(token != NULL) {
-                motor_duty_cycle     = atoi(token);
+		motor_duty_cycle     = atoi(token);
 		navigation_info.left_motor_duty_cycle = motor_duty_cycle;
 	}
 	
 	// 获取右侧电机速度
 	token = strtok(NULL, "/");
 	if(token != NULL) {
-                motor_duty_cycle     = atoi(token);
-                navigation_info.right_motor_duty_cycle = motor_duty_cycle;
+		motor_duty_cycle     = atoi(token);
+		navigation_info.right_motor_duty_cycle = motor_duty_cycle;
 	}
 	
 	// 设置状态为执行转向
@@ -232,9 +232,9 @@ void Navigation_UpdateLocation(){
 // 执行运动命令，先接受(ReceiveMoveInfo)再执行
 void Navigation_Execute()
 {
-	if(navigation_info.state != NAVIGATION_EXECUTING_MOVE) {
-		return;
-	}
+	// if(navigation_info.state != NAVIGATION_EXECUTING_MOVE) {
+	// 	return;
+	// }
 	
 	// 设置电机速度
 	// 左前轮和左后轮速度相同
@@ -255,7 +255,7 @@ void Navigation_Execute()
 	
 	// 设置电机方向
 	motor_information.motor_direction[CAR_LEFT_MOTORS] = 
-                (navigation_info.left_motor_duty_cycle >= 0) ? 
+		(navigation_info.left_motor_duty_cycle >= 0) ? 
 		MOTOR_FORWARD_DIRECTION : MOTOR_BACKED_DIRECTION;
 	
 	motor_information.motor_direction[CAR_RIGHT_MOTORS] = 
@@ -269,26 +269,28 @@ void Navigation_Execute()
 		target_motor_speed_setting(DEFAULT_STATUS, i, motor_information.motor_duty_cycle[i]);
 	}
 	
-   // delay(navigation_info.move_duration);
+	// delay(navigation_info.move_duration);
 	
 	// 发送运动执行ACK
 	Navigation_SendAck(NAVIGATION_ACK_MOVE, 0, 0);
 	
 	// 运动执行完成后，等待下一个位置请求
-	navigation_info.state = NAVIGATION_WAITING_FOR_POSITION;
+	// navigation_info.state = NAVIGATION_WAITING_FOR_POSITION;
+	navigation_info.state = NAVIGATION_EXECUTING_WAITING;
 }
 
 // 执行转向命令，先接受(ReceiveTurnInfo)再执行
 void Navigation_Turn()
 {
-        if(navigation_info.state != NAVIGATION_EXECUTING_TURN) {
-		return;
-	}
-        target_motor_speed_setting(DEFAULT_STATUS, MOTOR_CH1, navigation_info.left_motor_duty_cycle);
-        target_motor_speed_setting(DEFAULT_STATUS, MOTOR_CH2, navigation_info.right_motor_duty_cycle);
-        target_motor_speed_setting(DEFAULT_STATUS, MOTOR_CH3, navigation_info.left_motor_duty_cycle);
-        target_motor_speed_setting(DEFAULT_STATUS, MOTOR_CH4, navigation_info.right_motor_duty_cycle);
-        
+	// if(navigation_info.state != NAVIGATION_EXECUTING_TURN) {
+	// 	return;
+	// }
+	target_motor_speed_setting(DEFAULT_STATUS, MOTOR_CH1, navigation_info.left_motor_duty_cycle);
+	target_motor_speed_setting(DEFAULT_STATUS, MOTOR_CH2, navigation_info.right_motor_duty_cycle);
+	target_motor_speed_setting(DEFAULT_STATUS, MOTOR_CH3, navigation_info.left_motor_duty_cycle);
+	target_motor_speed_setting(DEFAULT_STATUS, MOTOR_CH4, navigation_info.right_motor_duty_cycle);
+	
+	
 }
 void Navigation_End(void)
 {
@@ -343,17 +345,6 @@ void Navigation_ParseCommand(char* received_data_buffer)
 		case NAVIGATION_END:
 			Navigation_End();
 			break;
-		
-		// 树莓派请求位置信息，单片机发送位置信息(已被废除,改为定时间发送当前小车位置)	
-		// case NAVIGATION_POSITION:
-		// 	// 更新当前GPS位置
-		// 	Navigation_UpdateLocation();
-			
-		// 	// 发送位置信息ACK
-		// 	Navigation_SendAck(NAVIGATION_ACK_POSITION, 
-		// 					 navigation_info.current_latitude,
-		// 					 navigation_info.current_longitude);
-		// 	break;
 			
 		// 执行运动
 		case NAVIGATION_MOVE:
@@ -364,7 +355,14 @@ void Navigation_ParseCommand(char* received_data_buffer)
 		case NAVIGATION_TURN:
 			Navigation_ReceiveTurnInfo(received_data_buffer);
 			break;
-			
+		
+		// 转向完成请求:
+		case NAVIGATION_TURN_FINISH:
+			// 设置状态为等待,并发送转向完成响应
+			navigation_info.state = NAVIGATION_EXECUTING_WAITING;
+			Navigation_SendAck(NAVIGATION_ACK_TURN_FINISH, 0, 0);
+			break;
+		
 		// 其他未知命令
 		default:
 			printf("ERR:UNKNOWN_CMD\n");
@@ -392,29 +390,6 @@ void Navigation_CalculateMoveParameters(void)
 }
 
 /*
-
-
-		// 接收并处理树莓派命令
-		if(receive_finished_status == 1){
-			// 检查是否为导航命令
-			if(usart1_received_data[0] == 'n') {
-				Navigation_ParseCommand(usart1_received_data);
-			} else {
-				// 解析其他命令(包括清除接收数据的缓冲区)
-				parse_usart1_command(usart1_received_data_buffer);
-			}
-			
-			// 清空接收的数据
-			memset(usart1_received_data, 0, sizeof(usart1_received_data));
-			// 清空接受的缓冲区
-			memset(usart1_received_data_buffer, 0, sizeof(usart1_received_data_buffer));
-			// 清空命令长度
-			command_length = 0;
-			// 重置接收状态
-			receive_finished_status = 0;
-		}
-
-
 if(navigation_info.state == NAVIGATION_EXECUTING_MOVE) {
 			// 记录运动开始时间
 			if(navigation_move_start_time == 0) {

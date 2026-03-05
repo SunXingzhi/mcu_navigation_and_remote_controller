@@ -8,7 +8,7 @@
 #include "public.h"
 #include "pid.h"
 #include "communication.h"
-
+#include "navigation.h"
 #define	STM32F103C8T6_HEAP_SIZE		0x00000200
 #define	STM32F103C8T6_STACK_SIZE	0X00000400
 
@@ -64,6 +64,9 @@ extern	MOTOR_INFORMATION	motor_information;
 extern	uint32_t		last_capture_time[MOTOR_NUMBER];
 extern	volatile uint32_t	systick_counter;
 
+// 导航状态
+extern NavigationInfo navigation_info;
+
 // GPS 经纬度数据
 extern float latitude_f;
 extern float longtitude_f;
@@ -98,6 +101,8 @@ int main(){
 	actual_duty_cycle	= (uint8_t*)safely_allocate_HEAP_memory(sizeof(uint8_t), MOTOR_NUMBER, 0);
 	if(actual_duty_cycle!=NULL){
 		printf("Allocate memory for actual_duty_cycle successfully.");
+		// debug
+		send_string_in_specific_way(USART_WAY, USART1, "Allocate memory for actual_duty_cycle successfully.");
 	}
 	
 	new_duty_cycle		= (uint8_t*)safely_allocate_HEAP_memory(sizeof(uint8_t), MOTOR_NUMBER, 0);
@@ -105,13 +110,13 @@ int main(){
 		printf("Allocate memory for new_duty_cycle successfully.");
 	}
 	
-	// 串口接收缓冲区初始化
+	// 初始化串口接收缓冲区
 	memset(usart1_received_data_buffer, 0, sizeof(usart1_received_data_buffer));
 	memset(gps_received_data_buffer, 0, sizeof(gps_received_data_buffer));
 	// 设置PID参数
 	PID_factor_setting(0.01, 0.009, 0.1);
 
-	//GPS数据结构初始化
+	// 初始化GPS数据结构
 	GPS_Init(&gps_handler);
 	
 	// 设置电机初始值
@@ -143,7 +148,7 @@ int main(){
 		
 		// 接收并处理树莓派命令
 		if(receive_finished_status==1){
-			// 解析数据(包括清除接收数据的缓冲区)
+			// 解析数据(包括清除接收数据的缓冲区),根据对应指令执行响应操作
 			// 解析后pid结构中已经包含了目标速度
 			parse_usart1_command(usart1_received_data_buffer);
 			// 清空接收的数据
@@ -156,7 +161,18 @@ int main(){
 			receive_finished_status	= 0;
 		}
 		
-		check_motor_stop(MOTOR_CH1);  
+                // 当接收到导航直线运动命令时,开始导航
+                if(navigation_info.state==NAVIGATION_EXECUTING_MOVE){
+                        // 执行导航运动
+                        Navigation_Execute();
+                }
+
+                // 当接收到导航曲线运动命令时,开始导航
+                if (navigation_info.state==NAVIGATION_EXECUTING_TURN){
+                        Navigation_Turn();
+                }
+                
+                check_motor_stop(MOTOR_CH1);  
 		// 处理电机逻辑
 		if(motor_finished_detection_status==1){
 			motor_speed = (get_motor_speed(MOTOR_CH1));
@@ -172,7 +188,7 @@ int main(){
 			motor_finished_detection_status	= 0;
 			motor_first_detection_status	= 0;	// 允许新周期开始
 			motor_pulse_count		= 0;	// 重置脉冲计数
-   					
+  					
 			// 释放内存
 //			free(motor_speed);
 //			motor_speed	= NULL;
