@@ -361,6 +361,8 @@ void Navigation_ParseCommand(char* received_data_buffer)
 			// 设置状态为等待,并发送转向完成响应
 			navigation_info.state = NAVIGATION_EXECUTING_WAITING;
 			Navigation_SendAck(NAVIGATION_ACK_TURN_FINISH, 0, 0);
+
+			// 设置电机速度
 			break;
 		
 		// 其他未知命令

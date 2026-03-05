@@ -167,11 +167,18 @@ int main(){
                         Navigation_Execute();
                 }
 
-                // 当接收到导航曲线运动命令时,开始导航
+                // 当接收到导航曲线运动命令时,开始导航, 不会轻易改变导航状态
                 if (navigation_info.state==NAVIGATION_EXECUTING_TURN){
                         Navigation_Turn();
                 }
-                
+
+                // 当接收到导航曲线完成命令, 停止电机
+                if (navigation_info.state==NAVIGATION_TURN_FINISH){
+                        car_stop(WITHOUT_BRAKES);
+                        // Navigation_End();
+                        // 发送导航曲线完成响应
+                        Navigation_SendAck(NAVIGATION_ACK_TURN, 0, 0);
+                }
                 check_motor_stop(MOTOR_CH1);  
 		// 处理电机逻辑
 		if(motor_finished_detection_status==1){
