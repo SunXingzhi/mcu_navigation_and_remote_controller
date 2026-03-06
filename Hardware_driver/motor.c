@@ -180,7 +180,7 @@ void motor_tim_init(void)
 	// 6. 配置 NVIC
 	NVIC_InitStruct.NVIC_IRQChannel				= TIM4_IRQn;
 	NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority	= 1;
-	NVIC_InitStruct.NVIC_IRQChannelSubPriority		= 0;
+	NVIC_InitStruct.NVIC_IRQChannelSubPriority		= 1;
 	NVIC_InitStruct.NVIC_IRQChannelCmd			= ENABLE;
 	NVIC_Init(&NVIC_InitStruct);
 	
