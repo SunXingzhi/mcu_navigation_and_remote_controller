@@ -1,6 +1,8 @@
 #include "system_config.h"
 #include "system_clock.h"
 #include "motor.h"
+#include "timer_module.h"
+#include "Navigation.h"
 #include "pid.h"
 #include "gps.h"
 #include "OLED.h"
@@ -17,6 +19,7 @@ extern	volatile uint32_t	last_capture_time[MOTOR_NUMBER];
 
 extern	PID_TypeDef*		pid_struct;
 
+extern void Navigation_ExecuteComplete(void);
 
 // GPIO 配置
 void GPIO_config(void)
@@ -137,7 +140,9 @@ void hardware_init(void)
 void software_package_init(void)
 {
 	delay_init();
-	
+	timer_module_init();
+	// 绑定回调函数
+	timer_module_set_callback(Navigation_ExecuteComplete);
 	return ;
 }
 

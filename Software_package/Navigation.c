@@ -6,6 +6,7 @@
 #include "PID.h"
 #include "gps.h"
 #include "communication.h"
+#include "timer_module.h"
 #include <math.h>
 // 外部变量声明
 extern MOTOR_INFORMATION motor_information;	 // 电机信息 包括电机的 方向 速度占空比
@@ -270,15 +271,15 @@ void Navigation_Execute()
 			motor_information.motor_duty_cycle[i]);
 		target_motor_speed_setting(DEFAULT_STATUS, i, motor_information.motor_duty_cycle[i]);
 	}
-	
-	// delay(navigation_info.move_duration);
+
 	
 	// 开始计时,结束计时时触发回调,发送运动执行ACK
+	timer_module_start(navigation_info.move_duration * 1000, false);
 	// timer_module_start(navigation_info.move_duration, false);
 	// timer_module_set_callback(Navigation_ExecuteComplete);
 
 	// 发送运动执行ACK
-	Navigation_SendAck(NAVIGATION_ACK_MOVE, 0, 0);
+	// Navigation_SendAck(NAVIGATION_ACK_MOVE, 0, 0);
 	
 	// 运动执行完成后，等待下一个位置请求
 	// navigation_info.state = NAVIGATION_WAITING_FOR_POSITION;
