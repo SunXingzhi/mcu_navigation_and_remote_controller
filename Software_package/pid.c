@@ -12,6 +12,7 @@ int32_t			target_value		= 0;
 //int32_t		actual_value		= 0;
 int32_t			integral_errors		= 0;
 int32_t			current_error		= 0;
+uint8_t                 pid_status              = 0;     // 0:关闭 , 1:开启
 
 // PID结构体恢复默认值
 void PID_deinit(void)

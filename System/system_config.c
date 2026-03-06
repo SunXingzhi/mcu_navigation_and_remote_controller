@@ -123,26 +123,6 @@ void USART2_Config(void)
 }
 
 
-void systick_init(void)
-{
-	/* SystemCoreClock / 1000    1ms中断一次
-	 * SystemCoreClock / 100000  10us中断一次
-	 * SystemCoreClock / 1000000 1us中断一次
-	 */
- 
-	/* 嘀嗒定时器每计数一次为 1/72M，此处计数 72个数，即1uS中断一次 */
-	if(SysTick_Config(SystemCoreClock / 1000000))	// ST V3.5.0库版本
-	{ 
-		/* Capture error */ 
-		while(1);
-	}
-	
-	// 关闭滴答定时器  
-	SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;	
-}
-
-
-
 // 硬件初始化函数
 void hardware_init(void)
 {
@@ -156,8 +136,7 @@ void hardware_init(void)
 // include systick, delay
 void software_package_init(void)
 {
-	// TIM... 
-	systick_init();
+	delay_init();
 	
 	return ;
 }
@@ -170,7 +149,7 @@ void system_init(void)
 	i	= 0;
 	RCC_PLL_config();
 //	SysTick_config();  
-	delay_init();	// 代替systick_config
+	delay_init();	
 	GPIO_config();
 	USART_config();
 	//GPS接收串口配置

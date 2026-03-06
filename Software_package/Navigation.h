@@ -24,8 +24,8 @@
 #define NAVIGATION_ACK_POSITION 	2
 #define NAVIGATION_ACK_MOVE     	3
 #define NAVIGATION_ACK_TURN     	4
-#define NAVIGATION_ACK_TURN_FINISH	5
-#
+// #define NAVIGATION_ACK_TURN_FINISH	5
+
 // 外部变量声明
 
 

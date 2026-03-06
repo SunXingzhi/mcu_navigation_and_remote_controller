@@ -66,12 +66,12 @@ extern	volatile uint32_t	systick_counter;
 
 // 导航状态
 extern NavigationInfo navigation_info;
-
+extern uint8_t pid_status;
 // GPS 经纬度数据
 extern float latitude_f;
 extern float longtitude_f;
 
-
+extern 
 // 函数声明
 void*	safely_allocate_HEAP_memory(size_t unit_size, uint32_t unit_number, char initial_char_value);
 uint8_t	safely_free_HEAP_memory(void* data_buffer);
@@ -136,8 +136,8 @@ int main(){
 				//发送数据(debug)
 				Send_GPS_String(USART3, gps_handler.coordinate, GPS_COORDINATE_SIZE);
 				// 构造经纬度数据字符串
-				sprintf(gps_received_data_buffer, "#n/2/%.6f/%.6f*\n", latitude_f, longtitude_f);
-				// todo 检验这里的字符串
+                                sprintf(gps_received_data_buffer, "#n/2/%s/%s*\n", gps_handler.latitude, gps_handler.longtitude);
+                                // todo 检验这里的字符串
 				send_string_in_specific_way(USART_WAY, USART1, gps_received_data_buffer);
 				// debug 
 				printf("gps_received_data_buffer: %s", gps_received_data_buffer);
@@ -173,20 +173,24 @@ int main(){
                 }
 
                 // 当接收到导航曲线完成命令, 停止电机
-                if (navigation_info.state==NAVIGATION_TURN_FINISH){
-                        car_stop(WITHOUT_BRAKES);
-                        // Navigation_End();
-                        // 发送导航曲线完成响应
-                        Navigation_SendAck(NAVIGATION_ACK_TURN, 0, 0);
-                }
+//                if (navigation_info.state==NAVIGATION_TURN_FINISH){
+//                        car_stop(WITHOUT_BRAKES);
+//                        // Navigation_End();
+//                        // 发送导航曲线完成响应
+//                        Navigation_SendAck(NAVIGATION_ACK_TURN, 0, 0);
+//                }
                 check_motor_stop(MOTOR_CH1);  
 		// 处理电机逻辑
 		if(motor_finished_detection_status==1){
 			motor_speed = (get_motor_speed(MOTOR_CH1));
 			
-//			// 获取新占空比,存储在全局变量中
-			new_duty_cycle[MOTOR_CH1]	= PID_get_new_duty_cycle(pid_struct, MOTOR_CH1);
-//			// 设置电机速度
+//			// 设置电机速度(PID模式)
+                        if(pid_status==1){
+                                // 获取新占空比,存储在全局变量中
+                                new_duty_cycle[MOTOR_CH1] = PID_get_new_duty_cycle(pid_struct, MOTOR_CH1);
+                                target_motor_speed_setting(DEFAULT_STATUS, MOTOR_CH1, new_duty_cycle[MOTOR_CH1]);
+				
+                        }
 ////			PID_target_motor_speed_setting(MOTOR_CH1, actual_duty_cycle[MOTOR_CH1]);
 //			target_motor_speed_setting(MOTOR_CH1, new_duty_cycle[MOTOR_CH1]);
 //			
